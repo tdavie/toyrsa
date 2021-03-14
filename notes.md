@@ -66,3 +66,18 @@ comment on numberphile RSA vid:
 
 "RSA's exponent of 65537 is chosen because it is a) prime and b) 2^16 + 1 which is 10000000000000001 binary. This makes modular exponentiation very much faster without sacrificing security. We find e and d mod (p - 1)(q - 1) because that is how modular multiplicative inverses work. Out exponent e must be coprime to (p - 1)(q - 1) but it is very unlikely that if we choose e prime, a randomly chosen p and q will yield either p - 1 or q - 1 as a multiple of e. If we are unlucky, we just choose new primes. There are other factors in the choice of p and q that must be taken into consideration, such that even though they should be roughly the same size, they shouldn't be too close to sqrt(n) i.e. if you want a 2048 bit modulus, don't make both p and q be 1024 bits."
 
+***
+
+Sources:
+
+https://cacr.uwaterloo.ca/hac/
+
+https://eli.thegreenplace.net/2019/rsa-theory-and-implementation/
+
+https://www.di-mgt.com.au/rsa_alg.html
+
+https://en.wikipedia.org/wiki/RSA_(cryptosystem)
+
+https://www.youtube.com/watch?v=wXB-V_Keiu8
+
+https://www.youtube.com/watch?v=JD72Ry60eP4
