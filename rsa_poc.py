@@ -14,9 +14,7 @@ def decrypt(ciphertext, priv_key):
     plaintext = ""
     # split ciphertext into space-delineated 'words' representing plaintext chars
     for word in ciphertext.split():
-        #print(word)
-        plaintext += chr((int(word)**priv_key[1] % priv_key[0]))
-        #print(int(word)^priv_key[1] % priv_key[0])
+        plaintext += chr(int(word)**priv_key[1] % priv_key[0])
     return plaintext
 
 # very basic ecb mode implementation, encrypts each char sequentially
@@ -24,10 +22,6 @@ def encrypt(plaintext, pub_key):
     ciphertext = ""
     for line in plaintext:
         for char in line:
-            # cipher = plain_char^(e) mod (n)
-            #print(ord(char))
-            #print(pub_key[0])
-            #print(pub_key[1])
             ciphertext += str((ord(char)**pub_key[1]) % pub_key[0])
             # add space between encrypted chars
             ciphertext += ' '
@@ -64,7 +58,7 @@ def keygen():
 # consider gordon's algo for strong prime generation
 # k = target no. bits (i.e. 2^k)
 # t = security parameter
-#def gen_prime(int k, int t):
+#def gen_prime(k, t):
 
 
 # selecting e
