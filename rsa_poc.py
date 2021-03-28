@@ -4,43 +4,37 @@ import sys
 import argparse
 import math
 
-# read public key file
-# n, e seperated by newline
-# returns (n, e) as a tuple
-def read_pub_key(pub_key):
-    try:
-        return tuple(open(pub_key).read().splitlines())
-    except:
-        sys.exit("failed to read public key")
+# read key file
+# return values separated by newline as a tuple of ints
+def read_key(key_file):
+    with key_file as f:
+        return tuple(map(int, f))
 
-def decrypt(ciphertext, priv_key, pub_key):
-    pub_key_tuple = read_pub_key(pub_key)
-    try:
-        d = int(open(priv_key).read())
-    except:
-        print("error reading private key")
-
+def decrypt(ciphertext, priv_key):
     plaintext = ""
     # split ciphertext into space-delineated 'words' representing plaintext chars
     for word in ciphertext.split():
-        plaintext += str(word^d % pub_key_tuple[0])
+        #print(word)
+        plaintext += chr((int(word)**priv_key[1] % priv_key[0]))
+        #print(int(word)^priv_key[1] % priv_key[0])
     return plaintext
 
 # very basic ecb mode implementation, encrypts each char sequentially
 def encrypt(plaintext, pub_key):
-    #pub_key_tuple = read_pub_key(pub_key)
     ciphertext = ""
     for line in plaintext:
         for char in line:
             # cipher = plain_char^(e) mod (n)
-            ciphertext += str(ord(char)^int(pub_key[0]) % int(pub_key[1]))
+            #print(ord(char))
+            #print(pub_key[0])
+            #print(pub_key[1])
+            ciphertext += str((ord(char)**pub_key[1]) % pub_key[0])
             # add space between encrypted chars
             ciphertext += ' '
     return ciphertext
 
 # PLACEHOLDER
 def keygen():
-
     # generate two primes similar size
     p1 = 61
     p2 = 53
@@ -95,8 +89,8 @@ if __name__ == "__main__":
     if args.k:
         keygen()
     elif args.e:
-        with args.pub_key as p_key:
-            pub_key = tuple(p_key.read().splitlines())
-            print(encrypt(args.input_text, pub_key))
+        with args.pub_key as pub_key:
+            print(encrypt(args.input_text, read_key(pub_key)))
     elif (args.d):
-        print(decrypt(args.input_text, priv_key, pub_key))
+        with args.priv_key as priv_key:
+            print(decrypt(args.input_text, read_key(priv_key)))
