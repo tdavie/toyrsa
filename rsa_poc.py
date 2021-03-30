@@ -29,17 +29,20 @@ def encrypt(plaintext, pub_key):
             ciphertext += ' '
     return ciphertext
 
-# PLACEHOLDER
+""" Returns randomly generated public and private keys
+
+n specifies approximate number of bits of each prime
+"""
 def keygen():
     # generate two primes similar size
     # t = 40 per justification below
-    p1 = gen_prime(64, 40)
-    p2 = gen_prime(64, 40)
+    p1 = gen_prime(1024, 40)
+    p2 = gen_prime(1024, 40)
 
     n = p1*p2
 
-    # pick small odd e
-    # 65537 is the standard
+    # pick small odd e, 65537 is the standard
+    # no security implications for keeping it fixed
     e = 65537   
 
 	# calculate private exponent
