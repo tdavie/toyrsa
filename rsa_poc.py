@@ -29,15 +29,38 @@ def encrypt(plaintext, pub_key):
             ciphertext += ' '
     return ciphertext
 
+def cbc_encrypt(plaintext, pub_key, block_size):
+        
+    # append spaces until block size evenly divides message length
+    while True:
+        if (len(plaintext) % block_size == 0):
+            break
+        plaintext += ' '
+
+    #b_plaintext = bytearray(plaintext, 'utf-8')
+    iv = secrets.randbits(block_size)
+    ciphertext = ""
+
+    for i in range((len(plaintext)/block_size)-1):
+        block = plaintext[i * block_size : (i+1) * block_size]
+        # XOR block with initialisation value / prev encrypted block
+        iv = bytearray(block, 'utf-8')) ^ bytearray(iv)
+        block = iv**priv_key[1] % priv_key[0]
+        ciphertext += block.decode(encoding="ascii", errors="strict")
+
 """ Returns randomly generated public and private keys
 
 n specifies approximate number of bits of each prime
 """
 def keygen():
     # generate two primes similar size
+    # ensure they can't be equal
     # t = 40 per justification below
-    p1 = gen_prime(1024, 40)
-    p2 = gen_prime(1024, 40)
+    while True:
+        p1 = gen_prime(1024, 40)
+        p2 = gen_prime(1024, 40)
+        if p1 != p2:
+            break
 
     n = p1*p2
 
@@ -67,7 +90,7 @@ def gen_prime(k, t):
 """ Return boolean primality of n
 
 Miller-rabin primality test
-This implementation courtesy https://gist.github.com/Ayrx/5884790
+This implementation modified from https://gist.github.com/Ayrx/5884790
 """
 def miller_rabin(n, k):
 
