@@ -45,7 +45,7 @@ def cbc_encrypt(plaintext, pub_key, block_size):
         block = plaintext[i * block_size : (i+1) * block_size]
         # XOR block with initialisation value / prev encrypted block
         iv = bytearray(block, 'utf-8')) ^ bytearray(iv)
-        block = iv**priv_key[1] % priv_key[0]
+        block = int(iv)**priv_key[1] % priv_key[0]
         ciphertext += block.decode(encoding="ascii", errors="strict")
 
 """ Returns randomly generated public and private keys
