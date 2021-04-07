@@ -19,7 +19,9 @@ def decrypt(ciphertext, priv_key):
         plaintext += chr(int(word)**priv_key[1] % priv_key[0])
     return plaintext
 
-# very basic ecb mode implementation, encrypts each char sequentially
+""" Returns ciphertext encrypted using electronic codebook mode
+
+"""
 def encrypt(plaintext, pub_key):
     ciphertext = ""
     for line in plaintext:
@@ -29,6 +31,9 @@ def encrypt(plaintext, pub_key):
             ciphertext += ' '
     return ciphertext
 
+""" Returns ciphertext encrypted using cipher block chaining mode
+
+"""
 def cbc_encrypt(plaintext, pub_key, block_size):
         
     # append spaces until block size evenly divides message length
