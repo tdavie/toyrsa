@@ -33,7 +33,7 @@ def encrypt(plaintext, pub_key):
 
 """ Returns ciphertext encrypted using cipher block chaining mode
 
-"""
+
 def cbc_encrypt(plaintext, pub_key, block_size):
         
     # append spaces until block size evenly divides message length
@@ -43,27 +43,37 @@ def cbc_encrypt(plaintext, pub_key, block_size):
         plaintext += ' '
 
     #b_plaintext = bytearray(plaintext, 'utf-8')
-    iv = secrets.randbits(block_size)
-    ciphertext = ""
+    iv = secrets.randbits(block_size * 8)
+    # initialisation vector prepended to ciphertext
+    # doesn't need to be secret, but is necessary for decrypting
+    ciphertext = str(iv) + '\n'
 
     for i in range((len(plaintext)/block_size)-1):
         block = plaintext[i * block_size : (i+1) * block_size]
-        # XOR block with initialisation value / prev encrypted block
-        iv = bytearray(block, 'utf-8')) ^ bytearray(iv)
-        block = int(iv)**priv_key[1] % priv_key[0]
-        ciphertext += block.decode(encoding="ascii", errors="strict")
+        cipherblock = xor_block(block, iv)
+        
+            # block cipher encryption
+        cipherblock = block_bytes ** priv_key[1] % priv_key[0]
+        ciphertext += cipherblock.decode(encoding="ascii")
+        iv = cipherblock
+
+# XOR block with initialisation value / prev encrypted block
+def xor_block(block, iv):
+    return bytes(ord(c)^k for c, k in zip(block, iv))
+"""
+
 
 """ Returns randomly generated public and private keys
 
 n specifies approximate number of bits of each prime
 """
-def keygen():
+def keygen(n):
     # generate two primes similar size
     # ensure they can't be equal
     # t = 40 per justification below
     while True:
-        p1 = gen_prime(1024, 40)
-        p2 = gen_prime(1024, 40)
+        p1 = gen_prime(n, 40)
+        p2 = gen_prime(n, 40)
         if p1 != p2:
             break
 
@@ -120,7 +130,6 @@ def miller_rabin(n, k):
         else:
             return False
     return True
-    
 
 if __name__ == "__main__":
     print("This is a toy implementation of RSA and not secure!")
@@ -131,15 +140,14 @@ if __name__ == "__main__":
     parser.add_argument('-priv', '--priv_key', type=argparse.FileType('r'), help="Private key file")
     parser.add_argument('-e', action="store_true", default=False)
     parser.add_argument('-d', action="store_true", default=False)
-    parser.add_argument('-k', action="store_true", default=False)
+    parser.add_argument('-k', type=int, default=False)
     args = parser.parse_args()
 
-
-    if args.k:
-        keygen()
+    if args.k is not None:
+        keygen(args.k)
     elif args.e:
         with args.pub_key as pub_key:
             print(encrypt(args.input_text, read_key(pub_key)))
-    elif (args.d):
+    elif args.d:
         with args.priv_key as priv_key:
             print(decrypt(args.input_text, read_key(priv_key)))
