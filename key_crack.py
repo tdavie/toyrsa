@@ -10,8 +10,27 @@ def trial_division(n):
             return (i, int(n/i))
         i += 2
 
+
 def private_exponent(primes, e):
     return pow(e, -1, math.lcm((primes[0]-1),(primes[1]-1)))
 
+# from https://stackoverflow.com/questions/2068372/fastest-way-to-list-all-primes-below-n/3035188#3035188
+def primes1(n):
+    """ Returns  a list of primes < n """
+    sieve = [True] * (n//2)
+    for i in range(3,int(n**0.5)+1,2):
+        if sieve[i//2]:
+            sieve[i*i//2::i] = [False] * ((n-i*i-1)//(2*i)+1)
+    return [2] + [2*i+1 for i in range(1,n//2) if sieve[i]]
+
+def prime_division(n):
+    primes = primes1(int(math.sqrt(n)))
+    for prime in primes:
+        if n % prime == 0:
+            return (prime, int(n/prime))
+
 if __name__ == "__main__":
-    print(private_exponent(trial_division(int(sys.argv[1])), int(sys.argv[2])))
+    if sys.argv[1] == "-t":
+        print(private_exponent(trial_division(int(sys.argv[2])), int(sys.argv[3])))
+    elif sys.argv[1] == "-p":
+        print(private_exponent(prime_division(int(sys.argv[2])), int(sys.argv[3])))
