@@ -14,7 +14,7 @@ def trial_division(n):
 def private_exponent(primes, e):
     return pow(e, -1, math.lcm((primes[0]-1),(primes[1]-1)))
 
-# from https://stackoverflow.com/questions/2068372/fastest-way-to-list-all-primes-below-n/3035188#3035188
+# fast prime generator from https://stackoverflow.com/questions/2068372/fastest-way-to-list-all-primes-below-n/3035188#3035188
 def primes1(n):
     """ Returns  a list of primes < n """
     sieve = [True] * (n//2)
@@ -27,6 +27,7 @@ def prime_division(n):
     primes = primes1(int(math.sqrt(n)))
     for prime in primes:
         if n % prime == 0:
+            print((prime, int(n/prime)))
             return (prime, int(n/prime))
 
 if __name__ == "__main__":
