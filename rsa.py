@@ -14,21 +14,52 @@ def read_key(key_file):
 
 def decrypt(ciphertext, priv_key):
     plaintext = ""
-    # split ciphertext into space-delineated 'words' representing plaintext chars
-    for word in ciphertext.split():
-        plaintext += chr(int(word)**priv_key[1] % priv_key[0])
+    print(f"{priv_key[0]}, {priv_key[1]}")
+    # split ciphertext into space-delineated blocks
+    for block in ciphertext.split():
+        #print(block)
+        #decrypt_block = (str(int(block)**priv_key[1] % priv_key[0])).zfill(3)
+        decrypt_block = str(chinese_remainder_decrypt(int(block), priv_key)).zfill(3)
+        #print(int(block)**priv_key[1] % priv_key[0])
+        #print(decrypt_block)
+        for i in range(int(len(decrypt_block)/3)):
+            plaintext += chr(int(decrypt_block[i*3:(i+1)*3]))
+            #print(int(decrypt_block[i*3:(i+1)*3]))
     return plaintext
 
+def chinese_remainder_decrypt(ciphertext, priv_key):
+    assert len(priv_key) == 4
+    dp = priv_key[1] % (priv_key[2] - 1)
+    dq = priv_key[1] % (priv_key[3] - 1)
+    qinv = pow(priv_key[3], -1, priv_key[2])
+    m1 = (ciphertext**dp % priv_key[2])
+    m2 = (ciphertext**dq % priv_key[3])
+    h = qinv * (m1 - m2) % priv_key[2]
+    return m2 + (h * priv_key[3] % (priv_key[2] * priv_key[3]))
 """ Returns ciphertext encrypted using electronic codebook mode
 
 """
-def encrypt(plaintext, pub_key):
+def encrypt(plaintext, pub_key, block_size):
+    # append spaces until block size evenly divides message length
+    while True:
+        if (len(plaintext) % block_size == 0):
+            break
+        plaintext += ' '
+
     ciphertext = ""
-    for line in plaintext:
-        for char in line:
-            ciphertext += str((ord(char)**pub_key[1]) % pub_key[0])
-            # add space between encrypted chars
+    block = ""
+    for x, char in enumerate(plaintext):
+        # append ascii char code digits to block string
+        # mod 127 to ensure only ascii, pad 0s to 3 digits
+        block += str((ord(char) % 127)).zfill(3)
+        # encrypt block once 'full'
+        if ((x + 1) % block_size == 0):
+            print(block)
+            ciphertext += str((int(block)**pub_key[1]) % pub_key[0])
+            # add space between blocks
+            print(ciphertext)
             ciphertext += ' '
+            block = ""
     return ciphertext
 
 """ Returns ciphertext encrypted using cipher block chaining mode
@@ -87,7 +118,7 @@ def keygen(n):
 	# d = modular multiplicative inverse of e modulo lambda(n)
     d = pow(e, -1, math.lcm((p1-1),(p2-1)))
 
-    print(f"Private key: {n}, {d}")
+    print(f"Private key: {n}, {d}, {p1}, {p2}")
     print(f"Public key: {n}, {e}")
 
 # random prime generator
@@ -138,16 +169,17 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--input_text', type=str, help="Input string to be encrypted/decrypted")
     parser.add_argument('-pub', '--pub_key', type=argparse.FileType('r'), help="Public key file")
     parser.add_argument('-priv', '--priv_key', type=argparse.FileType('r'), help="Private key file")
+    parser.add_argument('-b', '--block_size', type=int, help="block size for encryption")
     parser.add_argument('-e', action="store_true", default=False)
     parser.add_argument('-d', action="store_true", default=False)
     parser.add_argument('-k', type=int, default=False)
     args = parser.parse_args()
 
-    if args.k is not None:
+    if args.k:
         keygen(args.k)
     elif args.e:
         with args.pub_key as pub_key:
-            print(encrypt(args.input_text, read_key(pub_key)))
+            print(encrypt(args.input_text, read_key(pub_key), args.block_size))
     elif args.d:
         with args.priv_key as priv_key:
             print(decrypt(args.input_text, read_key(priv_key)))
