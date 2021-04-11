@@ -1,22 +1,35 @@
 # RSA Proof of Concept
 # NOT CRYPTOGRAPHICALLY SECURE
+# Using a 'textbook' implementation of RSA, without padding
 import sys
 import argparse
 import math
 import secrets
 import random
 
-# read key file
-# return values separated by newline as a tuple of ints
 def read_key(key_file):
+    """ Return values separated by newline as a tuple of ints"""
     with key_file as f:
         return tuple(map(int, f))
 
+""" Decrypts ciphertext encrypted using encrypt()
+
+    Args:
+        ciphertext: hex string to be decrypted
+        priv_key: public key as tuple (n, e)
+        block_size: int specifying how many chars per encrypted block
+    Returns:
+        Ciphertext as hex string with blocks seperated by spaces
+"""
 def decrypt(ciphertext, priv_key):
     plaintext = ""
     # split ciphertext into space-delineated blocks
     for block in ciphertext.split():
-        decrypt_block = str(chinese_remainder_decrypt(int(block, 0), priv_key))
+        # use faster crt decryption if p and q are provided in skey
+        if len(priv_key) == 4:
+            decrypt_block = str(chinese_remainder_decrypt(int(block, 0), priv_key))
+        else:
+            decrypt_block = (str(pow(int(block), priv_key[1], priv_key[0])))
         # deal with conversion from int removing trailling 0s
         if len(decrypt_block) % 3 != 0:
             decrypt_block = '0' + decrypt_block
@@ -26,6 +39,7 @@ def decrypt(ciphertext, priv_key):
     return plaintext
 
 def chinese_remainder_decrypt(ciphertext, priv_key):
+    """ Decrypt an int-type ciphertext using faster Chinese Remainder Theorem method"""
     assert len(priv_key) == 4
     dp = priv_key[1] % (priv_key[2] - 1)
     dq = priv_key[1] % (priv_key[3] - 1)
@@ -35,8 +49,14 @@ def chinese_remainder_decrypt(ciphertext, priv_key):
     h = qinv * (m1 - m2) % priv_key[2]
     return m2 + (h * priv_key[3] % (priv_key[2] * priv_key[3]))
 
-""" Returns ciphertext encrypted using electronic codebook mode
+""" Encrypt plaintext using ECB mode
 
+    Args:
+        plaintext: string to be encrypted
+        pub_key: public key as tuple (n, e)
+        block_size: int specifying how many chars per encrypted block
+    Returns:
+        Ciphertext as hex string with blocks seperated by spaces
 """
 def encrypt(plaintext, pub_key, block_size):
     # append spaces until block size evenly divides message length
@@ -59,9 +79,12 @@ def encrypt(plaintext, pub_key, block_size):
             block = ""
     return ciphertext
 
-""" Returns randomly generated public and private keys
+""" Generated public and private keys
 
-n specifies approximate number of bits of each prime
+    Generate keypair and print to terminal 
+
+    Args:
+        n specifies approximate number of bits of each prime
 """
 def keygen(n):
     # generate two primes similar size
@@ -98,10 +121,13 @@ def gen_prime(k, t):
 		if miller_rabin(n, t):
 			return n
 
-""" Return boolean primality of n
+""" Determine primality of n
 
 Miller-rabin primality test
 This implementation modified from https://gist.github.com/Ayrx/5884790
+
+    Returns:
+        boolean coresponding to primality of n
 """
 def miller_rabin(n, k):
 
