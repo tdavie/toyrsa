@@ -59,38 +59,6 @@ def encrypt(plaintext, pub_key, block_size):
             block = ""
     return ciphertext
 
-""" Returns ciphertext encrypted using cipher block chaining mode
-
-
-def cbc_encrypt(plaintext, pub_key, block_size):
-        
-    # append spaces until block size evenly divides message length
-    while True:
-        if (len(plaintext) % block_size == 0):
-            break
-        plaintext += ' '
-
-    #b_plaintext = bytearray(plaintext, 'utf-8')
-    iv = secrets.randbits(block_size * 8)
-    # initialisation vector prepended to ciphertext
-    # doesn't need to be secret, but is necessary for decrypting
-    ciphertext = str(iv) + '\n'
-
-    for i in range((len(plaintext)/block_size)-1):
-        block = plaintext[i * block_size : (i+1) * block_size]
-        cipherblock = xor_block(block, iv)
-        
-            # block cipher encryption
-        cipherblock = block_bytes ** priv_key[1] % priv_key[0]
-        ciphertext += cipherblock.decode(encoding="ascii")
-        iv = cipherblock
-
-# XOR block with initialisation value / prev encrypted block
-def xor_block(block, iv):
-    return bytes(ord(c)^k for c, k in zip(block, iv))
-"""
-
-
 """ Returns randomly generated public and private keys
 
 n specifies approximate number of bits of each prime
@@ -164,8 +132,7 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--input_text', type=str, help="Input string to be encrypted/decrypted")
-    parser.add_argument('-pub', '--pub_key', type=argparse.FileType('r'), help="Public key file")
-    parser.add_argument('-priv', '--priv_key', type=argparse.FileType('r'), help="Private key file")
+    parser.add_argument('-kf', '--key_file', type=argparse.FileType('r'), help="Public key file")
     parser.add_argument('-b', '--block_size', type=int, help="block size for encryption")
     parser.add_argument('-e', action="store_true", default=False)
     parser.add_argument('-d', action="store_true", default=False)
@@ -175,8 +142,8 @@ if __name__ == "__main__":
     if args.k:
         keygen(args.k)
     elif args.e:
-        with args.pub_key as pub_key:
+        with args.key_file as pub_key:
             print(encrypt(args.input_text, read_key(pub_key), args.block_size))
     elif args.d:
-        with args.priv_key as priv_key:
+        with args.key_file as priv_key:
             print(decrypt(args.input_text, read_key(priv_key)))
