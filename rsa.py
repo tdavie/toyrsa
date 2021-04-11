@@ -14,17 +14,15 @@ def read_key(key_file):
 
 def decrypt(ciphertext, priv_key):
     plaintext = ""
-    #print(f"{priv_key[0]}, {priv_key[1]}")
     # split ciphertext into space-delineated blocks
     for block in ciphertext.split():
-        #print(block)
-        #decrypt_block = (str(int(block)**priv_key[1] % priv_key[0])).zfill(3)
-        decrypt_block = str(chinese_remainder_decrypt(int(block), priv_key)).zfill(3)
-        #print(int(block)**priv_key[1] % priv_key[0])
-        #print(decrypt_block)
+        decrypt_block = str(chinese_remainder_decrypt(int(block, 0), priv_key))
+        # deal with conversion from int removing trailling 0s
+        if len(decrypt_block) % 3 != 0:
+            decrypt_block = '0' + decrypt_block
+        # read decrypted block 3 digits at a time as ascii chars
         for i in range(int(len(decrypt_block)/3)):
             plaintext += chr(int(decrypt_block[i*3:(i+1)*3]))
-            #print(int(decrypt_block[i*3:(i+1)*3]))
     return plaintext
 
 def chinese_remainder_decrypt(ciphertext, priv_key):
@@ -36,6 +34,7 @@ def chinese_remainder_decrypt(ciphertext, priv_key):
     m2 = pow(ciphertext, dq, priv_key[3])
     h = qinv * (m1 - m2) % priv_key[2]
     return m2 + (h * priv_key[3] % (priv_key[2] * priv_key[3]))
+
 """ Returns ciphertext encrypted using electronic codebook mode
 
 """
@@ -54,10 +53,8 @@ def encrypt(plaintext, pub_key, block_size):
         block += str((ord(char) % 127)).zfill(3)
         # encrypt block once 'full'
         if ((x + 1) % block_size == 0):
-            #print(block)
-            ciphertext += str((int(block)**pub_key[1]) % pub_key[0])
+            ciphertext += hex(pow(int(block), pub_key[1], pub_key[0]))
             # add space between blocks
-            #print(ciphertext)
             ciphertext += ' '
             block = ""
     return ciphertext
