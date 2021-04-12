@@ -29,7 +29,7 @@ def decrypt(ciphertext, priv_key):
         if len(priv_key) == 4:
             decrypt_block = str(chinese_remainder_decrypt(int(block, 0), priv_key))
         else:
-            decrypt_block = (str(pow(int(block), priv_key[1], priv_key[0])))
+            decrypt_block = (str(pow(int(block, 0), priv_key[1], priv_key[0])))
         # deal with conversion from int removing trailling 0s
         if len(decrypt_block) % 3 != 0:
             decrypt_block = '0' + decrypt_block
